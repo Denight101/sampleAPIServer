@@ -48,3 +48,38 @@ def test_get_item(client):
     assert data["id"] == item_id
     assert data["name"] == "Sample Item"
     assert data["value"] == 42
+
+def test_update_item(client):
+    """
+    Test updating an existing item in the API.
+    """
+    # Create an item first
+    create_response = client.post("/items", json={"name": "Old Item", "value": 10})
+    item_id = create_response.get_json()["id"]
+
+    # Update the item
+    update_response = client.put(f"/items/{item_id}", json={"name": "Updated Item", "value": 99})
+    assert update_response.status_code == 200
+
+    # Verify update
+    response = client.get(f"/items/{item_id}")
+    data = response.get_json()
+    assert data["name"] == "Updated Item"
+    assert data["value"] == 99
+
+
+def test_delete_item(client):
+    """
+    Test deleting an item from the API.
+    """
+    # Create an item
+    create_response = client.post("/items", json={"name": "To Delete", "value": 20})
+    item_id = create_response.get_json()["id"]
+
+    # Delete the item
+    delete_response = client.delete(f"/items/{item_id}")
+    assert delete_response.status_code == 200
+
+    # Verify item is gone
+    response = client.get(f"/items/{item_id}")
+    assert response.status_code == 404
